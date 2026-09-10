@@ -1,0 +1,6 @@
+{
+  "name": "PIC-UNIG 2027",
+  "description": "Sistema Institucional de Gestão de Iniciação Científica (PIC-UNIG) com Gerenciador Anual de Editais, Linha do Tempo Regimental, Simulador de Cenários, Banca Duplo-Cega e IA Gemini",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
