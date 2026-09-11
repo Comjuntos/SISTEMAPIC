@@ -24,11 +24,6 @@ import {
   atualizarPapelUsuario,
 } from './src/server/db-service.ts';
 import { analisarPropostaComGemini } from './src/server/gemini.ts';
-import {
-  getNotificacoesPorEmail,
-  marcarNotificacaoComoLida,
-  enviarNotificacaoParaOrientadorProposta,
-} from './src/server/notification-service.ts';
 import { optionalAuth } from './src/middleware/auth.ts';
 
 dotenv.config();
@@ -413,45 +408,6 @@ async function startServer() {
       res.json(atualizado);
     } catch (error: any) {
       res.status(500).json({ error: error.message || 'Erro ao atualizar papel do usuário' });
-    }
-  });
-
-  // --- SERVIÇO DE NOTIFICAÇÕES E E-MAILS SIMULADOS ---
-  app.get('/api/notificacoes', async (req, res) => {
-    try {
-      const email = String(req.query.email || '');
-      if (!email) {
-        return res.status(400).json({ error: 'Informe o e-mail.' });
-      }
-      const lista = await getNotificacoesPorEmail(email);
-      res.json(lista);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Falha ao buscar notificações' });
-    }
-  });
-
-  app.put('/api/notificacoes/:id/lida', async (req, res) => {
-    try {
-      const id = parseInt(req.params.id, 10);
-      const atualizada = await marcarNotificacaoComoLida(id);
-      res.json(atualizada);
-    } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Falha ao atualizar notificação' });
-    }
-  });
-
-  app.post('/api/notificacoes/teste', async (req, res) => {
-    try {
-      const { propostaId, assunto, corpo } = req.body;
-      await enviarNotificacaoParaOrientadorProposta({
-        propostaId: Number(propostaId || 1),
-        tipo: 'GERAL',
-        assunto: assunto || 'Teste de Notificação Institucional - PIC-UNIG 2027',
-        corpo: corpo || 'Este é um alerta de teste simulado enviado pelo sistema PIC-UNIG 2027.',
-      });
-      res.json({ success: true, message: 'Alerta de e-mail simulado enviado com sucesso.' });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message || 'Falha ao enviar teste' });
     }
   });
 

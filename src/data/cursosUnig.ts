@@ -445,8 +445,8 @@ export const LISTA_OFICIAL_CURSOS_UNIG: CursoUnig[] = [
 /**
  * Normaliza o nome do curso de graduação ou mestrado para associação exata
  */
-export function normalizarNomeCurso(cursoStr: string): string {
-  if (!cursoStr) return 'Administração';
+export function normalizarNomeCurso(cursoStr: string | null | undefined): string {
+  if (!cursoStr || typeof cursoStr !== 'string') return 'Administração';
   const c = cursoStr.toLowerCase().trim();
 
   // Mestrados
@@ -506,24 +506,25 @@ export function normalizarNomeCurso(cursoStr: string): string {
 /**
  * Retorna metadados de cor, campus e sigla para um curso ou mestrado
  */
-export function getCursoMeta(cursoStr: string): CursoUnig {
-  const norm = normalizarNomeCurso(cursoStr);
+export function getCursoMeta(cursoStr: string | null | undefined): CursoUnig {
+  const safeCurso = cursoStr && typeof cursoStr === 'string' ? cursoStr : 'Administração';
+  const norm = normalizarNomeCurso(safeCurso);
   const found = LISTA_OFICIAL_CURSOS_UNIG.find(
     (c) =>
       c.nome.toLowerCase() === norm.toLowerCase() ||
       c.id === norm.toLowerCase() ||
       c.sigla.toLowerCase() === norm.toLowerCase() ||
-      c.nome.toLowerCase() === cursoStr.toLowerCase()
+      c.nome.toLowerCase() === safeCurso.toLowerCase()
   );
 
   if (found) return found;
 
   return {
     id: 'generico',
-    nome: cursoStr,
-    sigla: cursoStr.substring(0, 4).toUpperCase(),
+    nome: safeCurso,
+    sigla: safeCurso.substring(0, 4).toUpperCase(),
     tipo: 'Graduação',
-    nomeExibicao: `${cursoStr} (UNIG)`,
+    nomeExibicao: `${safeCurso} (UNIG)`,
     campus: 'Campus Nova Iguaçu',
     grau: 'Bacharelado',
     duracaoSemestres: 8,

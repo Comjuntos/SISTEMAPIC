@@ -65,13 +65,13 @@ export const RelatoriosCoordenacao: React.FC<RelatoriosCoordenacaoProps> = ({
   // Filtragem das propostas no acervo
   const propostasFiltradas = useMemo(() => {
     return propostas.filter((p) => {
-      const termo = searchTerm.toLowerCase();
+      const termo = (searchTerm || '').toLowerCase();
       const matchSearch =
-        p.titulo.toLowerCase().includes(termo) ||
-        p.discenteNome.toLowerCase().includes(termo) ||
+        (p.titulo || '').toLowerCase().includes(termo) ||
+        (p.discenteNome || '').toLowerCase().includes(termo) ||
         (p.orientador?.nome && p.orientador.nome.toLowerCase().includes(termo)) ||
-        p.discenteCurso.toLowerCase().includes(termo) ||
-        `pic-${p.id}`.includes(termo);
+        (p.discenteCurso || '').toLowerCase().includes(termo) ||
+        `pic-${p.id}`.toLowerCase().includes(termo);
 
       const matchDesenho = filtroDesenho === 'todos' || p.metodoDesenho === filtroDesenho;
       const matchModalidade = filtroModalidade === 'todos' || p.modalidade === filtroModalidade;

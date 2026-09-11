@@ -67,63 +67,12 @@ export const NavbarHoverCard: React.FC<NavbarHoverCardProps> = ({
   const isAvaliador = currentUser.papel === 'avaliador';
   const isOrientador = currentUser.papel === 'orientador';
 
-  // Avaliação do status de acesso do usuário atual para este menu
-  const acessoStatus = (() => {
-    if (meta.acessoPrincipal === 'todos') {
-      return {
-        liberado: true,
-        tipo: 'publico',
-        mensagem: `Acesso Liberado para seu perfil (${currentRoleLabel})`,
-      };
-    }
-    if (meta.acessoPrincipal === 'gestao') {
-      if (isGestor) {
-        return {
-          liberado: true,
-          tipo: 'gestor',
-          mensagem: `Acesso Pleno de Gestão & Governança (${currentRoleLabel})`,
-        };
-      }
-      return {
-        liberado: false,
-        tipo: 'restrito_gestao',
-        mensagem: `Função exclusiva da Coordenação PIC & Pró-Reitoria. (Disponível para exploração)`,
-      };
-    }
-    if (meta.acessoPrincipal === 'banca') {
-      if (isAvaliador || isGestor) {
-        return {
-          liberado: true,
-          tipo: 'banca',
-          mensagem: `Acesso Liberado para Pareceristas e Coordenação da Banca`,
-        };
-      }
-      return {
-        liberado: false,
-        tipo: 'restrito_banca',
-        mensagem: `Avaliação sigilosa da Banca Examinadora. (Disponível para exploração)`,
-      };
-    }
-    if (meta.acessoPrincipal === 'orientador') {
-      if (isOrientador || isGestor) {
-        return {
-          liberado: true,
-          tipo: 'orientador',
-          mensagem: `Acesso Liberado para Docentes Orientadores e Coordenação`,
-        };
-      }
-      return {
-        liberado: false,
-        tipo: 'restrito_orientador',
-        mensagem: `Módulo destinado a Docentes Orientadores para envio de propostas.`,
-      };
-    }
-    return {
-      liberado: true,
-      tipo: 'livre',
-      mensagem: `Acesso Liberado para seu perfil`,
-    };
-  })();
+  // Acesso totalmente liberado para todas as funções e módulos para todos os usuários
+  const acessoStatus = {
+    liberado: true,
+    tipo: 'liberado',
+    mensagem: `Acesso Liberado para exploração e operação completa (${currentRoleLabel})`,
+  };
 
   const alignClass = (() => {
     if (align === 'left') return 'left-0';

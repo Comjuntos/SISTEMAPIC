@@ -17,7 +17,6 @@ import {
   HelpCircle,
   Lock,
   Users,
-  Mail,
 } from 'lucide-react';
 import { auth, googleAuthProvider } from '../lib/firebase.ts';
 import { signInWithPopup, signOut } from 'firebase/auth';
@@ -31,8 +30,6 @@ interface NavbarProps {
   onRefreshData: () => void;
   onOpenGestaoUsuarios: () => void;
   onLogout: () => void;
-  onOpenNotificacoes: () => void;
-  onOpenPerfil?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -44,13 +41,16 @@ export const Navbar: React.FC<NavbarProps> = ({
   onRefreshData,
   onOpenGestaoUsuarios,
   onLogout,
-  onOpenNotificacoes,
-  onOpenPerfil,
 }) => {
   const [showPersonaMenu, setShowPersonaMenu] = useState(false);
   const [showMatrizModal, setShowMatrizModal] = useState(false);
+  const [showGestaoDropdown, setShowGestaoDropdown] = useState(false);
   const [hoveredMenuId, setHoveredMenuId] = useState<string | null>(null);
   const hoverTimeoutRef = useRef<any>(null);
+
+  const isGestor = currentUser.papel === 'coordenador' || currentUser.papel === 'admin';
+  const itensGestaoIds = ['projetos', 'bolsas', 'simulador', 'relatorios'];
+  const isGestaoActive = itensGestaoIds.includes(activeTab);
 
   const handleMouseEnter = (id: string) => {
     if (hoverTimeoutRef.current) {
@@ -174,17 +174,6 @@ export const Navbar: React.FC<NavbarProps> = ({
               <span className="text-xs font-semibold hidden md:inline">Avisos do Edital</span>
             </button>
 
-            {/* Caixa de E-mails e Alertas Simulados ao Orientador */}
-            <button
-              id="btn-nav-notificacoes"
-              onClick={onOpenNotificacoes}
-              className="p-2 sm:px-2.5 sm:py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 hover:text-white transition-all cursor-pointer flex items-center space-x-1.5 shadow-xs"
-              title="Caixa de E-mails e Alertas de Propostas"
-            >
-              <Mail className="w-4 h-4 text-amber-400 shrink-0" />
-              <span className="text-xs font-semibold hidden lg:inline">E-mails & Alertas</span>
-            </button>
-
             {/* Seletor rápido de Perfil para testes de Banca / Coordenação */}
             <div className="relative">
               <button
@@ -255,18 +244,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                     ))}
                   </div>
                   <div className="px-3 pt-2 border-t border-slate-100 flex flex-col space-y-1.5">
-                    {onOpenPerfil && (
-                      <button
-                        onClick={() => {
-                          setShowPersonaMenu(false);
-                          onOpenPerfil();
-                        }}
-                        className="w-full text-left px-2 py-1.5 rounded-lg text-xs font-semibold text-slate-700 hover:bg-slate-100 flex items-center space-x-2 cursor-pointer"
-                      >
-                        <GraduationCap className="w-3.5 h-3.5 text-blue-600" />
-                        <span>Meu Perfil (Dados &amp; Foto da Conta)</span>
-                      </button>
-                    )}
                     <button
                       onClick={() => {
                         setShowPersonaMenu(false);
@@ -296,13 +273,19 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Barra de Navegação Horizontal com Todos os Menus e Hover Informativo */}
-        <div className="py-2 border-t border-white/5 flex items-center justify-between">
-          <nav className="flex space-x-1.5 overflow-x-auto scrollbar-none py-0.5 flex-1 pr-2">
+        <div className="py-2.5 border-t border-white/5 flex flex-col lg:flex-row lg:items-center justify-between gap-2">
+          <nav className="flex flex-wrap items-center gap-1.5 py-0.5 flex-1">
             {MENUS_SISTEMA.map((menu, index) => {
+              const isGestor = currentUser.papel === 'coordenador' || currentUser.papel === 'admin';
+              
+              // Ocultar itens de gestao do loop principal pois serão agrupados no menu "Gestão"
+              if (itensGestaoIds.includes(menu.id)) {
+                return null;
+              }
+
               const isActive =
                 activeTab === menu.id ||
-                (menu.id === 'editais' && activeTab === 'anexos' && false) ||
-                (menu.id === 'relatorios' && activeTab === 'auditoria');
+                (menu.id === 'editais' && activeTab === 'anexos' && false);
 
               const isHovered = hoveredMenuId === menu.id;
 
@@ -373,6 +356,73 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </div>
               );
             })}
+
+            {/* Menu Gestão exclusivo para Coordenadores e Admins */}
+            {isGestor && (
+              <div className="relative shrink-0">
+                <button
+                  id="tab-gestao-dropdown"
+                  onClick={() => setShowGestaoDropdown(!showGestaoDropdown)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-150 flex items-center space-x-1.5 cursor-pointer relative ${
+                    isGestaoActive
+                      ? 'bg-amber-500 text-slate-950 font-bold shadow-sm ring-2 ring-amber-400/40'
+                      : 'text-slate-200 hover:bg-white/10 hover:text-white'
+                  }`}
+                >
+                  <span className={isGestaoActive ? 'text-slate-950' : 'text-amber-400'}>
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                  </span>
+                  <span>Gestão</span>
+                  <span className="bg-amber-400/20 text-amber-300 text-[9px] px-1.5 py-0.2 rounded font-black tracking-wider">
+                    4 MÓDULOS
+                  </span>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${showGestaoDropdown ? 'rotate-180' : ''}`} />
+                </button>
+
+                {showGestaoDropdown && (
+                  <div className="absolute left-0 mt-2 w-72 bg-white rounded-2xl shadow-xl border border-slate-200 py-2 z-50">
+                    <div className="px-3 py-1.5 border-b border-slate-100 flex items-center justify-between">
+                      <span className="text-[10px] font-black uppercase tracking-wider text-slate-400">Governança & Gestão</span>
+                      <span className="text-[10px] bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-bold">Coordenação PIC</span>
+                    </div>
+                    <div className="p-1 space-y-0.5">
+                      {MENUS_SISTEMA.filter(m => itensGestaoIds.includes(m.id)).map(menu => {
+                        const isSubActive = activeTab === menu.id || (menu.id === 'relatorios' && activeTab === 'auditoria');
+                        return (
+                          <button
+                            key={menu.id}
+                            onClick={() => {
+                              setActiveTab(menu.id);
+                              setShowGestaoDropdown(false);
+                            }}
+                            className={`w-full text-left px-3 py-2 rounded-xl text-xs font-semibold flex items-center space-x-2.5 transition-colors cursor-pointer ${
+                              isSubActive
+                                ? 'bg-amber-50 text-amber-900 font-bold border border-amber-200/60'
+                                : 'text-slate-700 hover:bg-slate-50'
+                            }`}
+                          >
+                            <span className={isSubActive ? 'text-amber-600' : 'text-slate-500'}>
+                              {getMenuIcon(menu.iconeNome, 'w-4 h-4')}
+                            </span>
+                            <div className="flex-1 truncate">
+                              <div className="flex items-center justify-between">
+                                <span className="truncate">{menu.label}</span>
+                                {menu.badge && (
+                                  <span className="text-[9px] bg-slate-100 text-slate-700 px-1.5 py-0.2 rounded font-bold">
+                                    {menu.badge}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-[10px] text-slate-400 truncate font-normal">{menu.categoria}</p>
+                            </div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </nav>
 
           {/* Dica do Perfil Vigente */}

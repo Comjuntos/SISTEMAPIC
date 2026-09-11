@@ -31,17 +31,24 @@ export async function runDatabaseSeed() {
       .values([
         {
           uid: 'admin-unig-001',
+          nome: 'RMS (Administrador)',
+          email: 'rms221070@gmail.com',
+          papel: 'admin',
+          avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        },
+        {
+          uid: 'admin-unig-002',
           nome: 'Prof. Dr. Valter Soares',
           email: 'proreitoria.pesquisa@unig.br',
           papel: 'admin',
           avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
         },
         {
-          uid: 'coord-unig-003',
-          nome: 'Prof. Coordenador 0142076',
-          email: '0142076@professor.unig.edu.br',
+          uid: 'coord-unig-002',
+          nome: 'Profa. Dra. Heloísa Vasconcelos',
+          email: 'coordenacao.pic@unig.br',
           papel: 'coordenador',
-          avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+          avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80',
         },
         {
           uid: 'aval-unig-001',

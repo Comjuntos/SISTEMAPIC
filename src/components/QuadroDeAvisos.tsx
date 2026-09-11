@@ -85,11 +85,11 @@ export const QuadroDeAvisos: React.FC<QuadroDeAvisosProps> = ({
   }, [propostas]);
 
   const meusProjetosCount = useMemo(() => {
-    if (currentUser.papel !== 'orientador') return 0;
+    if (!currentUser || currentUser.papel !== 'orientador') return 0;
     return propostas.filter(
       (p) =>
         p.orientadorId === currentUser.id ||
-        (p.orientador?.usuarioNome && p.orientador.usuarioNome.toLowerCase().includes(currentUser.nome.toLowerCase()))
+        (p.orientador?.usuarioNome && (p.orientador.usuarioNome || '').toLowerCase().includes((currentUser?.nome || '').toLowerCase()))
     ).length;
   }, [propostas, currentUser]);
 

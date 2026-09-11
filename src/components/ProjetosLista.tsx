@@ -71,12 +71,12 @@ export const ProjetosLista: React.FC<ProjetosListaProps> = ({
   const filtradas = propostas.filter((p) => {
     const cursoMeta = getCursoMeta(p.discenteCurso);
     const matchesSearch =
-      p.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.discenteNome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.discenteCurso.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      cursoMeta.sigla.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.subarea.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (p.orientador?.usuarioNome || '').toLowerCase().includes(searchTerm.toLowerCase());
+      (p.titulo || '').toLowerCase().includes((searchTerm || '').toLowerCase()) ||
+      (p.discenteNome || '').toLowerCase().includes((searchTerm || '').toLowerCase()) ||
+      (p.discenteCurso || '').toLowerCase().includes((searchTerm || '').toLowerCase()) ||
+      (cursoMeta.sigla || '').toLowerCase().includes((searchTerm || '').toLowerCase()) ||
+      (p.subarea || '').toLowerCase().includes((searchTerm || '').toLowerCase()) ||
+      (p.orientador?.usuarioNome || '').toLowerCase().includes((searchTerm || '').toLowerCase());
 
     const matchesModalidade =
       modalidadeFiltro === 'todas' || p.modalidade === modalidadeFiltro;
@@ -91,14 +91,14 @@ export const ProjetosLista: React.FC<ProjetosListaProps> = ({
     const matchesCurso =
       cursoFiltro === 'todos' ||
       normalizarNomeCurso(p.discenteCurso).toLowerCase() === cursoFiltro.toLowerCase() ||
-      p.discenteCurso.toLowerCase().includes(cursoFiltro.toLowerCase());
+      (p.discenteCurso || '').toLowerCase().includes(cursoFiltro.toLowerCase());
 
     const matchesMeusProjetos =
       !apenasMeusProjetos ||
       !currentUser ||
       p.orientadorId === currentUser.id ||
       (p.orientador?.usuarioNome &&
-        p.orientador.usuarioNome.toLowerCase().includes(currentUser.nome.toLowerCase()));
+        p.orientador.usuarioNome.toLowerCase().includes((currentUser?.nome || '').toLowerCase()));
 
     return matchesSearch && matchesModalidade && matchesStatus && matchesCurso && matchesMeusProjetos;
   });

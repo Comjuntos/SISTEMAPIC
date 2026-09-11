@@ -71,11 +71,11 @@ export const SimuladorCenarios: React.FC<SimuladorCenariosProps> = ({
   const propostasFiltradas = useMemo(() => {
     return simulacao.propostasComparadas.filter((p) => {
       const matchBusca =
-        p.titulo.toLowerCase().includes(busca.toLowerCase()) ||
-        p.orientadorNome.toLowerCase().includes(busca.toLowerCase()) ||
-        p.discenteNome.toLowerCase().includes(busca.toLowerCase()) ||
-        p.discenteCurso.toLowerCase().includes(busca.toLowerCase()) ||
-        p.codigoFormatado.toLowerCase().includes(busca.toLowerCase());
+        (p.titulo || '').toLowerCase().includes((busca || '').toLowerCase()) ||
+        (p.orientadorNome || '').toLowerCase().includes((busca || '').toLowerCase()) ||
+        (p.discenteNome || '').toLowerCase().includes((busca || '').toLowerCase()) ||
+        (p.discenteCurso || '').toLowerCase().includes((busca || '').toLowerCase()) ||
+        (p.codigoFormatado || '').toLowerCase().includes((busca || '').toLowerCase());
 
       if (!matchBusca) return false;
 

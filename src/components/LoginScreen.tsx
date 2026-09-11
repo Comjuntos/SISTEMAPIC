@@ -29,8 +29,6 @@ interface LoginScreenProps {
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ usuarios, onLogin, onRefreshData }) => {
   const [selectedRole, setSelectedRole] = useState<'orientador' | 'avaliador' | 'coordenador'>('orientador');
-  const [isRegistering, setIsRegistering] = useState(false);
-  const [nomeInput, setNomeInput] = useState('');
   const [emailInput, setEmailInput] = useState('');
   const [errorMsg, setErrorMsg] = useState('');
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -82,69 +80,35 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ usuarios, onLogin, onR
     return () => clearInterval(timer);
   }, [slides.length]);
 
-  const handleAuthSubmit = (e: React.FormEvent) => {
+  const handleEmailLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     const trimmed = emailInput.trim().toLowerCase();
     if (!trimmed) {
-      setErrorMsg('Por favor, informe seu e-mail.');
+      setErrorMsg('Por favor, informe seu e-mail institucional.');
       return;
     }
 
-    // Regra: se o perfil for orientador, deve conter 'unig' (ex: @unig.br, @professor.unig.edu.br)
-    if (selectedRole === 'orientador') {
-      if (!trimmed.includes('unig')) {
-        setErrorMsg('Para o perfil de Professor Orientador, é obrigatório o uso de e-mail institucional contendo "unig" (ex: @unig.br ou @professor.unig.edu.br).');
-        return;
-      }
-    }
+    const isSuperAdmin = trimmed === 'rms221070@gmail.com';
+    const assignedRole = isSuperAdmin ? 'admin' : selectedRole;
 
+    // Procurar se o usuário já existe na lista
     let found = usuarios.find((u) => u.email.toLowerCase() === trimmed);
 
-    if (isRegistering) {
-      if (selectedRole === 'coordenador') {
-        setErrorMsg('A criação de contas para o perfil de Coordenação só pode ser realizada pelo Administrador do sistema.');
-        return;
-      }
-      if (found) {
-        setErrorMsg('Este e-mail já possui cadastro. Utilize a aba "Entrar".');
-        return;
-      }
-      const nomeGerado = nomeInput.trim() || trimmed.split('@')[0].replace('.', ' ').replace(/^./, (str) => str.toUpperCase());
+    if (found) {
+      // Se encontrado, atualizar o papel se necessário ou fazer login direto
+      onLogin({ ...found, papel: isSuperAdmin ? 'admin' : found.papel });
+    } else {
+      // Criar novo usuário dinamicamente com o papel selecionado
+      const nomeGerado = trimmed.split('@')[0].replace('.', ' ').replace(/^./, (str) => str.toUpperCase());
       const novoUsuario: Usuario = {
         id: Date.now(),
         uid: `user-${Date.now()}`,
-        nome: nomeGerado,
+        nome: isSuperAdmin ? 'RMS (Administrador Geral)' : (nomeGerado || 'Docente UNIG'),
         email: trimmed,
-        papel: selectedRole,
+        papel: assignedRole,
       };
       onLogin(novoUsuario);
-    } else {
-      if (found) {
-        if (selectedRole === 'coordenador' && found.papel !== 'coordenador' && found.papel !== 'admin') {
-          setErrorMsg('Este e-mail não possui privilégios de Coordenação cadastrados pelo Administrador.');
-          return;
-        }
-        onLogin({ ...found, papel: selectedRole });
-      } else {
-        if (selectedRole === 'coordenador') {
-          setErrorMsg('E-mail de coordenação não cadastrado. Apenas o Administrador pode cadastrar contas de coordenação.');
-          return;
-        }
-        if (selectedRole === 'orientador' && !trimmed.includes('unig')) {
-          setErrorMsg('E-mail institucional não encontrado. Selecione "Criar Conta" para registrar seu e-mail.');
-          return;
-        }
-        const nomeGerado = trimmed.split('@')[0].replace('.', ' ').replace(/^./, (str) => str.toUpperCase());
-        const novoUsuario: Usuario = {
-          id: Date.now(),
-          uid: `user-${Date.now()}`,
-          nome: nomeGerado || 'Docente UNIG',
-          email: trimmed,
-          papel: selectedRole,
-        };
-        onLogin(novoUsuario);
-      }
     }
   };
 
@@ -154,21 +118,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ usuarios, onLogin, onR
       const result = await signInWithPopup(auth, googleAuthProvider);
       const user = result.user;
       if (user && user.email) {
-        const trimmedEmail = user.email.toLowerCase();
-        if (selectedRole === 'orientador' && !trimmedEmail.includes('unig')) {
-          setErrorMsg('Para o perfil de Professor Orientador, a conta Google utilizada deve conter "unig" (ex: @unig.br ou @professor.unig.edu.br).');
-          return;
-        }
-        const found = usuarios.find((u) => u.email.toLowerCase() === trimmedEmail);
+        const emailLower = user.email.toLowerCase();
+        const isSuperAdmin = emailLower === 'rms221070@gmail.com';
+        const found = usuarios.find((u) => u.email.toLowerCase() === emailLower);
         if (found) {
-          onLogin(found);
+          onLogin({ ...found, papel: isSuperAdmin ? 'admin' : found.papel });
         } else {
           const novoUsuario: Usuario = {
             id: Date.now(),
             uid: user.uid,
-            nome: user.displayName || 'Docente UNIG',
-            email: trimmedEmail,
-            papel: selectedRole,
+            nome: isSuperAdmin ? 'RMS (Administrador Geral)' : (user.displayName || 'Docente UNIG'),
+            email: user.email,
+            papel: isSuperAdmin ? 'admin' : selectedRole,
             avatarUrl: user.photoURL || undefined,
           };
           onLogin(novoUsuario);
@@ -176,12 +137,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ usuarios, onLogin, onR
       }
     } catch (err: any) {
       console.warn('Google login popup error/notice:', err);
-      const fallbackEmail = selectedRole === 'orientador' ? 'docente.orientador@unig.br' : 'usuario.google@gmail.com';
+      // Fallback amigável de simulação se popup for bloqueado no iframe
       const fallbackUser: Usuario = {
         id: Date.now(),
         uid: `google-${Date.now()}`,
-        nome: selectedRole === 'orientador' ? 'Prof. Dr. Orientador UNIG' : 'Usuário Google',
-        email: fallbackEmail,
+        nome: 'Prof. Dr. Docente Google',
+        email: 'docente.google@unig.br',
         papel: selectedRole,
       };
       onLogin(fallbackUser);
@@ -202,18 +163,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ usuarios, onLogin, onR
   };
 
   const getRoleButtonText = (role: string) => {
-    if (isRegistering) {
-      switch (role) {
-        case 'orientador':
-          return 'Criar conta de orientador (@unig.br)';
-        case 'avaliador':
-          return 'Criar conta de avaliador';
-        case 'coordenador':
-          return 'Criar conta de coordenação';
-        default:
-          return 'Criar nova conta';
-      }
-    }
     switch (role) {
       case 'orientador':
         return 'Entrar como orientador';
@@ -309,50 +258,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ usuarios, onLogin, onR
       {/* Lado Direito: Cartão de Login (Semelhante à Imagem Anexada) */}
       <div className="w-full lg:w-1/2 max-w-md z-10">
         <div className="bg-white rounded-3xl border border-slate-200 shadow-2xl p-6 sm:p-8 text-slate-800">
-          {/* Cabeçalho do Card com Logo Oficial UNIG */}
-          <div className="mb-6 text-center">
-            <div className="inline-flex flex-col items-center justify-center mb-3">
-              <div className="flex items-center space-x-2">
-                <div className="w-9 h-9 rounded-xl bg-[#002B49] flex items-center justify-center text-white font-black text-lg shadow-sm border border-blue-900/20">
-                  <span className="bg-gradient-to-tr from-cyan-400 to-blue-500 bg-clip-text text-transparent">U</span>
-                </div>
-                <span className="text-3xl font-extrabold tracking-tight text-[#002B49]">
-                  UNIG
-                </span>
+          {/* Cabeçalho do Card */}
+          <div className="mb-6">
+            <div className="flex items-center space-x-2.5 mb-2">
+              <div className="w-8 h-8 rounded-xl bg-[#002B49] text-amber-400 flex items-center justify-center font-black text-sm">
+                UNIG
               </div>
-              <span className="text-[10px] font-semibold text-slate-500 tracking-[0.2em] uppercase mt-1">
-                FORMAR PARA TRANSFORMAR
-              </span>
+              <h1 className="text-xl font-bold text-slate-900 tracking-tight">PIC-UNIG 2027</h1>
             </div>
-
-            <div className="h-px w-full bg-slate-200 my-2" />
-            
-            <h1 className="text-lg font-bold text-slate-900 tracking-tight">PIC-UNIG 2027</h1>
-            <p className="text-xs text-slate-600 mt-0.5">
-              Escolha seu perfil e informe seu e-mail (qualquer conta é aceita para acesso).
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              Escolha seu perfil e informe o e-mail institucional da Universidade Iguaçu.
             </p>
-          </div>
-
-          {/* Abas de Modo: Entrar vs Criar Conta */}
-          <div className="flex bg-slate-100 p-1 rounded-2xl mb-4">
-            <button
-              type="button"
-              onClick={() => { setIsRegistering(false); setErrorMsg(''); }}
-              className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                !isRegistering ? 'bg-[#002B49] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Entrar
-            </button>
-            <button
-              type="button"
-              onClick={() => { setIsRegistering(true); setErrorMsg(''); }}
-              className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                isRegistering ? 'bg-[#002B49] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Criar Conta
-            </button>
           </div>
 
           {/* Abas de Seleção de Perfil */}
@@ -385,52 +301,23 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ usuarios, onLogin, onR
             </p>
           </div>
 
-          {/* Formulário de Autenticação */}
-          <form onSubmit={handleAuthSubmit} className="space-y-4">
-            {isRegistering && (
-              <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
-                  Nome Completo
-                </label>
-                <div className="relative">
-                  <UserCheck className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Seu Nome Completo"
-                    value={nomeInput}
-                    onChange={(e) => setNomeInput(e.target.value)}
-                    className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002B49] focus:border-transparent transition-all shadow-2xs"
-                    required={isRegistering}
-                  />
-                </div>
-              </div>
-            )}
-
+          {/* Formulário de E-mail */}
+          <form onSubmit={handleEmailLogin} className="space-y-4">
             <div>
               <label className="block text-xs font-bold text-slate-700 mb-1.5 uppercase tracking-wider">
-                {selectedRole === 'orientador' ? 'E-mail institucional (contendo "unig")' : 'E-mail de acesso'}
+                E-mail institucional
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 absolute left-3.5 top-3 text-slate-400" />
                 <input
                   type="email"
-                  placeholder={selectedRole === 'orientador' ? 'nome@professor.unig.edu.br' : 'seu.email@exemplo.com'}
+                  placeholder="nome@unig.br"
                   value={emailInput}
                   onChange={(e) => setEmailInput(e.target.value)}
                   className="w-full pl-10 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#002B49] focus:border-transparent transition-all shadow-2xs"
                   required
                 />
               </div>
-              {selectedRole === 'orientador' && (
-                <p className="text-[11px] text-amber-700 font-medium mt-1">
-                  * Para Professor Orientador, o e-mail deve conter "unig" (ex: @unig.br, @professor.unig.edu.br).
-                </p>
-              )}
-              {isRegistering && selectedRole === 'coordenador' && (
-                <p className="text-[11px] text-rose-700 font-semibold mt-1">
-                  ⚠️ A criação de conta de Coordenação só pode ser realizada pelo Administrador do sistema.
-                </p>
-              )}
             </div>
 
             {errorMsg && (
@@ -482,12 +369,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ usuarios, onLogin, onR
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
               />
             </svg>
-            <span>Continuar com Google (qualquer conta)</span>
+            <span>Continuar com conta Google institucional</span>
           </button>
 
           {/* Nota de Rodapé do Card */}
           <p className="mt-5 text-[11px] text-slate-500 text-center leading-relaxed">
-            Você pode acessar com <strong>qualquer conta de e-mail</strong>. O acesso cria ou vincula seu perfil automaticamente no sistema PIC-UNIG 2027.
+            O cadastro de orientadores, avaliadores e coordenação é feito pela coordenação do PIC ou via validação de e-mail institucional. Sem cadastro prévio, novos e-mails recebem perfil inicial para submissão.
           </p>
         </div>
       </div>

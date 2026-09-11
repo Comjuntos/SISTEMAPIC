@@ -176,19 +176,6 @@ export const auditoriaLogs = pgTable('auditoria_logs', {
   criadoEm: timestamp('criado_em').defaultNow().notNull(),
 });
 
-// 12. Tabela de Notificações / E-mails Simulados para Orientadores
-export const notificacoes = pgTable('notificacoes', {
-  id: serial('id').primaryKey(),
-  orientadorId: integer('orientador_id').references(() => orientadores.id),
-  orientadorEmail: text('orientador_email').notNull(),
-  propostaId: integer('proposta_id').references(() => propostas.id),
-  assunto: text('assunto').notNull(),
-  corpo: text('corpo').notNull(),
-  tipo: text('tipo').notNull().default('STATUS_ALTERADO'), // 'STATUS_ALTERADO' ou 'PARECER_RECEBIDO'
-  lida: boolean('lida').default(false).notNull(),
-  criadoEm: timestamp('criado_em').defaultNow().notNull(),
-});
-
 // Relations
 export const usuariosRelations = relations(usuarios, ({ one, many }) => ({
   dadosPessoais: one(dadosPessoaisParticipantes, {

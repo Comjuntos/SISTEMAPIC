@@ -50,12 +50,12 @@ export const FormularioSubmissao: React.FC<FormularioSubmissaoProps> = ({
 
   // Orientador pré-selecionado se for professor logado
   const initialOrientador =
-    currentUser.papel === 'orientador'
+    currentUser?.papel === 'orientador'
       ? orientadores.find(
           (o) =>
-            o.usuarioEmail === currentUser.email ||
-            o.usuarioNome.toLowerCase().includes(currentUser.nome.toLowerCase()) ||
-            currentUser.nome.toLowerCase().includes(o.usuarioNome.toLowerCase())
+            o.usuarioEmail === currentUser?.email ||
+            (o.usuarioNome || '').toLowerCase().includes((currentUser?.nome || '').toLowerCase()) ||
+            (currentUser?.nome || '').toLowerCase().includes((o.usuarioNome || '').toLowerCase())
         ) || orientadores[0]
       : orientadores[0];
 
@@ -135,7 +135,7 @@ export const FormularioSubmissao: React.FC<FormularioSubmissaoProps> = ({
         resumo,
         orientadorId: Number(orientadorId),
         discenteNome,
-        discenteEmail: discenteEmail || `${discenteNome.toLowerCase().replace(/\s+/g, '.')}@aluno.unig.br`,
+        discenteEmail: discenteEmail || `${(discenteNome || '').toLowerCase().replace(/\s+/g, '.')}@aluno.unig.br`,
         discenteCurso,
         discenteCr,
         modalidade,

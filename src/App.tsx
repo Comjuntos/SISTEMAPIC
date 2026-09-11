@@ -3,7 +3,6 @@ import { Usuario, Proposta, Edital, Orientador, AuditoriaLog } from './types/ind
 import { Navbar } from './components/Navbar.tsx';
 import { LoginScreen } from './components/LoginScreen.tsx';
 import { GestaoUsuariosModal } from './components/GestaoUsuariosModal.tsx';
-import { NotificacoesModal } from './components/NotificacoesModal.tsx';
 import { PainelProgresso } from './components/PainelProgresso.tsx';
 import { ProjetosLista } from './components/ProjetosLista.tsx';
 import { WorkspaceBanca } from './components/WorkspaceBanca.tsx';
@@ -17,7 +16,6 @@ import { ConformidadeAnexosEdital } from './components/ConformidadeAnexosEdital.
 import { ModalParecerConsolidado } from './components/ModalParecerConsolidado.tsx';
 import { ModalDownloadSeguro } from './components/ModalDownloadSeguro.tsx';
 import { QuadroDeAvisos } from './components/QuadroDeAvisos.tsx';
-import { ModalPerfil } from './components/ModalPerfil.tsx';
 import { Building2, ShieldCheck, Sparkles, RefreshCw } from 'lucide-react';
 
 export default function App() {
@@ -29,41 +27,40 @@ export default function App() {
     {
       id: 1,
       uid: 'admin-unig-001',
+      nome: 'RMS (Administrador)',
+      email: 'rms221070@gmail.com',
+      papel: 'admin',
+    },
+    {
+      id: 2,
+      uid: 'admin-unig-002',
       nome: 'Prof. Dr. Valter Soares',
       email: 'proreitoria.pesquisa@unig.br',
       papel: 'admin',
     },
     {
-      id: 2,
+      id: 3,
       uid: 'coord-unig-002',
       nome: 'Profa. Dra. Heloísa Vasconcelos',
       email: 'coordenacao.pic@unig.br',
       papel: 'coordenador',
     },
     {
-      id: 6,
-      uid: 'coord-unig-003',
-      nome: 'Prof. Coordenador 0142076',
-      email: '0142076@professor.unig.edu.br',
-      papel: 'coordenador',
-      avatarUrl: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
-    },
-    {
-      id: 3,
+      id: 4,
       uid: 'aval-unig-001',
       nome: 'Dr. Carlos Eduardo Meireles',
       email: 'carlos.meireles@unig.br',
       papel: 'avaliador',
     },
     {
-      id: 4,
+      id: 5,
       uid: 'aval-unig-002',
       nome: 'Dra. Juliana Mendes Fontes',
       email: 'juliana.fontes@unig.br',
       papel: 'avaliador',
     },
     {
-      id: 5,
+      id: 6,
       uid: 'orient-unig-001',
       nome: 'Prof. Dr. Roberto Guimarães',
       email: 'roberto.guimaraes@unig.br',
@@ -73,13 +70,6 @@ export default function App() {
 
   const [currentUser, setCurrentUser] = useState<Usuario | null>(null);
   const [showGestaoUsuarios, setShowGestaoUsuarios] = useState<boolean>(false);
-  const [showNotificacoes, setShowNotificacoes] = useState<boolean>(false);
-  const [showPerfil, setShowPerfil] = useState<boolean>(false);
-
-  const handleUpdateUser = (updatedUser: Usuario) => {
-    setCurrentUser(updatedUser);
-    setUsuarios((prev) => prev.map((u) => (u.id === updatedUser.id ? updatedUser : u)));
-  };
   const [propostas, setPropostas] = useState<Proposta[]>([]);
   const [edital, setEdital] = useState<Edital | null>(null);
   const [editais, setEditais] = useState<Edital[]>([]);
@@ -147,23 +137,21 @@ export default function App() {
     loadData();
   }, []);
 
-  // Redirecionamento regimental estrito de acordo com o edital:
-  // - Professores: Somente Enviar Projeto, Meus Projetos e Ver Editais/Anexos
-  // - Avaliadores: Somente Avaliar Projetos (Banca) e Ver Editais/Anexos
+  // Restrição regimental: Simulador, Relatórios e Auditoria, Distribuição de Bolsas e Banco de Projetos são exclusivos para Coordenador e Administrador
   useEffect(() => {
     if (!currentUser) return;
-    if (currentUser.papel === 'orientador') {
-      const allowedOrientador = ['submissao', 'projetos', 'editais', 'anexos'];
-      if (!allowedOrientador.includes(activeTab)) {
+    const isGestor = currentUser.papel === 'coordenador' || currentUser.papel === 'admin';
+    const restrictedTabs = ['simulador', 'relatorios', 'bolsas', 'projetos'];
+    if (!isGestor && restrictedTabs.includes(activeTab)) {
+      if (currentUser.papel === 'orientador') {
         setActiveTab('submissao');
-      }
-    } else if (currentUser.papel === 'avaliador') {
-      const allowedAvaliador = ['banca', 'projetos', 'editais', 'anexos'];
-      if (!allowedAvaliador.includes(activeTab)) {
+      } else if (currentUser.papel === 'avaliador') {
         setActiveTab('banca');
+      } else {
+        setActiveTab('progresso');
       }
     }
-  }, [currentUser?.papel]);
+  }, [currentUser?.papel, activeTab]);
 
   // Lançar Parecer no Backend
   const handleSaveAvaliacao = async (data: any) => {
@@ -368,8 +356,6 @@ export default function App() {
         onRefreshData={loadData}
         onOpenGestaoUsuarios={() => setShowGestaoUsuarios(true)}
         onLogout={() => setCurrentUser(null)}
-        onOpenNotificacoes={() => setShowNotificacoes(true)}
-        onOpenPerfil={() => setShowPerfil(true)}
       />
 
       {/* Conteúdo Principal */}
@@ -539,23 +525,6 @@ export default function App() {
           usuarios={usuarios}
           currentUser={currentUser}
           onUpdateRole={handleUpdateRole}
-        />
-      )}
-
-      {showNotificacoes && currentUser && (
-        <NotificacoesModal
-          isOpen={showNotificacoes}
-          onClose={() => setShowNotificacoes(false)}
-          currentUser={currentUser}
-        />
-      )}
-
-      {showPerfil && currentUser && (
-        <ModalPerfil
-          isOpen={showPerfil}
-          onClose={() => setShowPerfil(false)}
-          currentUser={currentUser}
-          onUpdateUser={handleUpdateUser}
         />
       )}
 

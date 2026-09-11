@@ -15,7 +15,6 @@ import {
 import { eq, desc, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 import { analisarPropostaComGemini } from './gemini.ts';
-import { enviarNotificacaoParaOrientadorProposta } from './notification-service.ts';
 import {
   calcularScoreMetodologico,
   HIERARQUIA_DESENHOS,
@@ -928,14 +927,6 @@ export async function submeterNovaProposta(data: {
       ipOrigem: data.ipOrigem || '127.0.0.1',
     });
 
-    // Enviar alerta por e-mail simulado ao orientador
-    await enviarNotificacaoParaOrientadorProposta({
-      propostaId: novaProposta.id,
-      tipo: 'STATUS_ALTERADO',
-      assunto: 'Proposta Submetida com Sucesso - PIC-UNIG 2027',
-      corpo: `Prezado(a) Professor(a) Orientador(a),\n\nSua proposta "${data.titulo}" foi submetida com sucesso ao Edital PIC-UNIG 2027.\n- Hash SHA-256: ${hashSha256}\n- Status Atual: Em Avaliação (Etapa 1 - Habilitação Documental Concluída).\n\nAtenciosamente,\nPró-Reitoria de Pós-Graduação e Pesquisa (PROPEP - UNIG)`,
-    });
-
     // 1º Momento: Disparar Análise Preliminar por IA Gemini
     try {
       const iaResult = await analisarPropostaComGemini({
@@ -1052,14 +1043,6 @@ export async function lancarAvaliacaoParecerista(data: {
       ipOrigem: data.ipOrigem || '127.0.0.1',
     });
 
-    // Enviar alerta por e-mail simulado ao orientador sobre o parecer
-    await enviarNotificacaoParaOrientadorProposta({
-      propostaId: data.propostaId,
-      tipo: 'PARECER_RECEBIDO',
-      assunto: `Novo Parecer da Banca Registrado (Parecerista ${data.ordemParecerista}) - PIC-UNIG 2027`,
-      corpo: `Prezado(a) Professor(a) Orientador(a),\n\nInformamos que um novo parecer técnico foi emitido pela banca ad-hoc para o seu projeto de pesquisa.\n\n- Nota Atribuída: ${totalMerito.toFixed(2)} / 6.00\n- Recomendação: ${data.recomendacao}\n- Parecer Consubstanciado: "${data.parecerConsubstanciado}"\n\nAcesse o sistema PIC-UNIG 2027 para acompanhar o andamento da avaliação duplo-cega.\n\nAtenciosamente,\nPró-Reitoria de Pós-Graduação e Pesquisa (PROPEP - UNIG)`,
-    });
-
     // Reavaliar consolidação e divergência
     await recalcularConsolidacaoProposta(data.propostaId);
 
@@ -1090,14 +1073,6 @@ export async function recalcularConsolidacaoProposta(propostaId: number) {
       .update(propostas)
       .set({ status: 'avaliada' })
       .where(eq(propostas.id, propostaId));
-
-    // Enviar notificação de alteração de status para 'avaliada'
-    await enviarNotificacaoParaOrientadorProposta({
-      propostaId,
-      tipo: 'STATUS_ALTERADO',
-      assunto: `Status da Proposta Atualizado para "Avaliada" - PIC-UNIG 2027`,
-      corpo: `Prezado(a) Professor(a) Orientador(a),\n\nA avaliação da banca duplo-cega do seu projeto foi concluída com sucesso (Pareceristas 1 e 2).\nStatus Atualizado: Avaliada (Aguardando homologação e classificação final para concessão das 100 bolsas do Edital 2027).\n\nAtenciosamente,\nCoordenação PIC-UNIG`,
-    });
 
     const n1 = parseFloat(aval1.notaMeritoTotal);
     const n2 = parseFloat(aval2.notaMeritoTotal);
