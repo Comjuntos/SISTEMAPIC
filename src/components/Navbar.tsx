@@ -145,16 +145,18 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Ações Rápidas, Guia de Papéis & Persona Switcher */}
           <div className="flex items-center space-x-2 sm:space-x-2.5">
-            {/* Botão Guia de Menus e Permissões */}
-            <button
-              id="btn-nav-matriz-acessos"
-              onClick={() => setShowMatrizModal(true)}
-              className="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 hover:text-white transition-all cursor-pointer flex items-center space-x-1.5 shadow-xs"
-              title="Ver todas as funções do sistema e quem pode visualizá-las"
-            >
-              <HelpCircle className="w-4 h-4 text-amber-400 shrink-0" />
-              <span className="text-xs font-bold hidden sm:inline">Mapa de Funções &amp; Papéis</span>
-            </button>
+            {/* Botão Guia de Menus e Permissões (Oculto para Orientador conforme diretriz) */}
+            {currentUser.papel !== 'orientador' && (
+              <button
+                id="btn-nav-matriz-acessos"
+                onClick={() => setShowMatrizModal(true)}
+                className="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 border border-amber-400/40 text-amber-300 hover:text-white transition-all cursor-pointer flex items-center space-x-1.5 shadow-xs"
+                title="Ver todas as funções do sistema e quem pode visualizá-las"
+              >
+                <HelpCircle className="w-4 h-4 text-amber-400 shrink-0" />
+                <span className="text-xs font-bold hidden sm:inline">Mapa de Funções &amp; Papéis</span>
+              </button>
+            )}
 
             {/* Atalho para o Quadro de Avisos e Cronograma */}
             <button
@@ -280,6 +282,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               
               // Ocultar itens de gestao do loop principal pois serão agrupados no menu "Gestão"
               if (itensGestaoIds.includes(menu.id)) {
+                return null;
+              }
+
+              // Para o perfil de orientador, exibir Enviar Projeto, Meus Projetos Submetidos, Diretrizes & Anexos e Google Drive
+              if (currentUser.papel === 'orientador' && !['submissao', 'meus-projetos', 'anexos', 'drive'].includes(menu.id)) {
                 return null;
               }
 

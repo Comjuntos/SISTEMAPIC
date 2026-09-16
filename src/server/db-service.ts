@@ -677,9 +677,12 @@ export async function getPropostasList() {
       .from(propostas)
       .orderBy(desc(propostas.id));
 
+    // Filtrar para manter apenas Mortalidade por Doenças Cardiovasculares e novas submissões, excluindo os demais
+    const filteredList = list.filter(p => p.titulo.includes('Mortalidade por Doenças Cardiovasculares') || p.id > 5);
+
     // Enriquecer com dados de avaliação, orientador e cálculo
     const results = await Promise.all(
-      list.map(async (p) => {
+      filteredList.map(async (p) => {
         const [dist] = await db
           .select()
           .from(distribuicoesAvaliacao)

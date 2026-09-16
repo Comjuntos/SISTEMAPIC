@@ -1,6 +1,10 @@
 import React, { useState } from 'react';
 import { Proposta } from '../types/index.ts';
-import { exportarParecerIndividualPDF } from '../utils/pdfExport.ts';
+import {
+  exportarParecerIndividualPDF,
+  exportarComprovanteSubmissaoPDF,
+  exportarRelatorioAcompanhamentoPDF,
+} from '../utils/pdfExport.ts';
 import {
   X,
   Award,
@@ -134,6 +138,34 @@ export const ModalParecerConsolidado: React.FC<ModalParecerConsolidadoProps> = (
           >
             <X className="w-5 h-5" />
           </button>
+        </div>
+
+        {/* PDF Export Toolbar */}
+        <div className="px-6 py-3 bg-slate-100/80 border-b border-slate-200 flex flex-wrap items-center justify-between gap-2">
+          <span className="text-[11px] font-bold text-slate-700">Exportar Documentos Oficiais em PDF:</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              onClick={() => exportarComprovanteSubmissaoPDF(proposta)}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-[11px] font-bold shadow-xs transition-colors cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Comprovante de Submissão</span>
+            </button>
+            <button
+              onClick={() => exportarRelatorioAcompanhamentoPDF(proposta)}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[11px] font-bold shadow-xs transition-colors cursor-pointer"
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Relatório de Acompanhamento</span>
+            </button>
+            <button
+              onClick={() => exportarParecerIndividualPDF(proposta)}
+              className="inline-flex items-center space-x-1.5 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-[11px] font-bold shadow-xs transition-colors cursor-pointer"
+            >
+              <Award className="w-3.5 h-3.5" />
+              <span>Laudo Técnico da Banca</span>
+            </button>
+          </div>
         </div>
 
         {/* 4 Abas Claramente Definidas */}

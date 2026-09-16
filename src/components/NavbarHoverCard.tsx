@@ -21,6 +21,7 @@ import {
   Scale,
   Crown,
   ArrowRight,
+  HardDrive,
 } from 'lucide-react';
 
 interface NavbarHoverCardProps {
@@ -51,6 +52,8 @@ export const getMenuIcon = (iconeNome: string, className = 'w-4 h-4') => {
       return <SlidersHorizontal className={className} />;
     case 'ShieldCheck':
       return <ShieldCheck className={className} />;
+    case 'HardDrive':
+      return <HardDrive className={className} />;
     default:
       return <FileCheck className={className} />;
   }

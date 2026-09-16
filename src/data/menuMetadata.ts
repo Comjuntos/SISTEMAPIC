@@ -226,4 +226,49 @@ export const MENUS_SISTEMA: MenuMeta[] = [
     badge: 'PDF & LOGS',
     badgeCor: 'bg-rose-500 text-white font-bold',
   },
+  {
+    id: 'drive',
+    label: 'Google Drive',
+    categoria: 'Integração Workspace',
+    iconeNome: 'HardDrive',
+    resumo:
+      'Gerenciamento e sincronização de documentos de pesquisa, planos de trabalho e relatórios institucionais diretamente com o Google Drive.',
+    funcoes: [
+      'Visualização e listagem de arquivos do Google Drive',
+      'Exportação de relatórios institucionais diretamente para o Drive',
+      'Exclusão e gerenciamento seguro de arquivos conectados',
+    ],
+    papeis: {
+      coordenador: 'Acesso Pleno: Gestão de documentos institucionais.',
+      admin: 'Acesso Irrestrito: Supervisão de armazenamento e arquivos.',
+      orientador: 'Acesso Pessoal: Sincronização de planos de trabalho.',
+      avaliador: 'Acesso de Consulta: Sincronização de relatórios.',
+    },
+    acessoPrincipal: 'todos',
+    badge: 'DRIVE',
+    badgeCor: 'bg-blue-500 text-white font-bold',
+  },
+  {
+    id: 'meus-projetos',
+    label: 'Meus Projetos Submetidos',
+    categoria: 'Gestão Docente',
+    iconeNome: 'FolderKanban',
+    resumo:
+      'Área exclusiva do professor orientador para acompanhamento, gestão de status, notas da banca, pareceres de IA e download de comprovantes de submissão.',
+    funcoes: [
+      'Acompanhamento em tempo real do status de avaliação (Submetido, Em Banca, Aprovado)',
+      'Visualização das notas atribuídas pela banca examinadora (Anexo VI)',
+      'Consulta ao parecer automatizado da IA Gemini Flash',
+      'Download do comprovante e ata de submissão em PDF',
+    ],
+    papeis: {
+      orientador: 'Acesso Exclusivo: Gestão total de suas propostas submetidas.',
+      coordenador: 'Acesso de Gestão: Visualização integrada.',
+      admin: 'Acesso Irrestrito: Supervisão geral.',
+      avaliador: 'Não aplicável.',
+    },
+    acessoPrincipal: 'orientador',
+    badge: 'MEUS PROJETOS',
+    badgeCor: 'bg-emerald-400 text-slate-950 font-black',
+  },
 ];

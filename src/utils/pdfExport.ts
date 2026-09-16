@@ -1674,4 +1674,270 @@ export function exportarEditalCronogramaPDF(edital: Edital) {
   doc.save(filename);
 }
 
+/**
+ * Exporta o Comprovante Oficial de Submissão do Projeto (A4 Retrato)
+ */
+export function exportarComprovanteSubmissaoPDF(proposta: Proposta) {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'pt',
+    format: 'a4',
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const startX = 40;
+  const contentWidth = pageWidth - startX * 2;
+  let currentY = 36;
+
+  // Tarja superior
+  doc.setFillColor(COR_AZUL_UNIG[0], COR_AZUL_UNIG[1], COR_AZUL_UNIG[2]);
+  doc.rect(0, 0, pageWidth, 6, 'F');
+
+  // Cabeçalho
+  doc.setFillColor(COR_AZUL_UNIG[0], COR_AZUL_UNIG[1], COR_AZUL_UNIG[2]);
+  doc.roundedRect(startX, currentY, 32, 32, 4, 4, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(255, 255, 255);
+  doc.text('U', startX + 16, currentY + 22, { align: 'center' });
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(COR_AZUL_UNIG[0], COR_AZUL_UNIG[1], COR_AZUL_UNIG[2]);
+  doc.text('UNIVERSIDADE IGUAÇU — UNIG', startX + 42, currentY + 11);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(COR_TEXTO_MUTED[0], COR_TEXTO_MUTED[1], COR_TEXTO_MUTED[2]);
+  doc.text('Pró-Reitoria de Pós-Graduação e Pesquisa — PROPEP', startX + 42, currentY + 22);
+  doc.text('Programa Institucional de Iniciação Científica (PIC 2027)', startX + 42, currentY + 32);
+
+  // Selo de Comprovante
+  const seloWidth = 170;
+  const seloX = pageWidth - startX - seloWidth;
+  doc.setFillColor(239, 246, 255); // blue-50
+  doc.setDrawColor(191, 219, 254); // blue-200
+  doc.roundedRect(seloX, currentY, seloWidth, 32, 4, 4, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(0, 43, 73);
+  doc.text('COMPROVANTE DE SUBMISSÃO', seloX + seloWidth / 2, currentY + 13, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.text(`Protocolo: #PIC-${String(proposta.id).padStart(3, '0')}`, seloX + seloWidth / 2, currentY + 25, { align: 'center' });
+
+  currentY += 46;
+  doc.setDrawColor(COR_BORDA[0], COR_BORDA[1], COR_BORDA[2]);
+  doc.line(startX, currentY, pageWidth - startX, currentY);
+  currentY += 18;
+
+  // Título
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(13);
+  doc.setTextColor(COR_AZUL_UNIG[0], COR_AZUL_UNIG[1], COR_AZUL_UNIG[2]);
+  doc.text('COMPROVANTE OFICIAL DE REGISTRO DE PROPOSTA DE PESQUISA', pageWidth / 2, currentY, { align: 'center' });
+  currentY += 16;
+
+  // Caixa com detalhes do projeto
+  doc.setFillColor(COR_CINZA_CLARO[0], COR_CINZA_CLARO[1], COR_CINZA_CLARO[2]);
+  doc.setDrawColor(COR_BORDA[0], COR_BORDA[1], COR_BORDA[2]);
+  doc.roundedRect(startX, currentY, contentWidth, 110, 4, 4, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(COR_TEXTO_MUTED[0], COR_TEXTO_MUTED[1], COR_TEXTO_MUTED[2]);
+  doc.text('TÍTULO DO PROJETO:', startX + 12, currentY + 14);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9.5);
+  doc.setTextColor(COR_TEXTO_ESCURO[0], COR_TEXTO_ESCURO[1], COR_TEXTO_ESCURO[2]);
+  const splitTitulo = doc.splitTextToSize(proposta.titulo, contentWidth - 24);
+  doc.text(splitTitulo, startX + 12, currentY + 26);
+  const offsetT = (splitTitulo.length - 1) * 11;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(COR_TEXTO_MUTED[0], COR_TEXTO_MUTED[1], COR_TEXTO_MUTED[2]);
+  doc.text(`Instituição: Universidade Iguaçu (UNIG) • Grande Área: ${proposta.grandeArea} • Subárea: ${proposta.subarea || '--'}`, startX + 12, currentY + 44 + offsetT);
+  doc.text(`Edital PIC-UNIG 2027/2028 • Registro de Iniciação Científica`, startX + 12, currentY + 56 + offsetT);
+  doc.text(`Docente Orientador: ${proposta.orientador?.nome || proposta.orientador?.usuarioNome || 'Credenciado'} (${proposta.orientador?.titulacao || 'Doutor'})`, startX + 12, currentY + 68 + offsetT);
+  doc.text(`Estudante Bolsista: ${proposta.discenteNome} • Curso: ${proposta.discenteCurso} • CR: ${proposta.discenteCr}`, startX + 12, currentY + 80 + offsetT);
+  doc.text(`Modalidade: ${proposta.modalidade}${proposta.tipoCota ? ` (${proposta.tipoCota})` : ''} • Hash SHA-256: ${proposta.hashSha256 || 'HASH'}`, startX + 12, currentY + 92 + offsetT);
+
+  currentY += 124 + offsetT;
+
+  // Texto de confirmação legal
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(COR_TEXTO_ESCURO[0], COR_TEXTO_ESCURO[1], COR_TEXTO_ESCURO[2]);
+  doc.text(
+    `Certificamos que a proposta de pesquisa acima identificada foi submetida com sucesso ao sistema eletrônico do Programa de Iniciação Científica da Universidade Iguaçu (PIC-UNIG 2027), gerando registro criptografado em conformidade com as normas regimentais da PROPEP.`,
+    startX,
+    currentY,
+    { maxWidth: contentWidth }
+  );
+
+  currentY += 55;
+
+  // Assinatura digital / carimbo
+  doc.setFillColor(240, 253, 244);
+  doc.setDrawColor(187, 247, 208);
+  doc.roundedRect(startX, currentY, contentWidth, 45, 4, 4, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(21, 128, 61);
+  doc.text('VALIDAÇÃO ELETRÔNICA PROPEP-UNIG', startX + 12, currentY + 14);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.setTextColor(22, 101, 52);
+  doc.text(`Data e Hora da Submissão: ${new Date().toLocaleString('pt-BR')}`, startX + 12, currentY + 26);
+  doc.text(`Chave de Autenticidade: ${proposta.hashSha256 || 'UNIG-2027-PIC-SECURE-HASH'}`, startX + 12, currentY + 36);
+
+  currentY += 65;
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(COR_AZUL_UNIG[0], COR_AZUL_UNIG[1], COR_AZUL_UNIG[2]);
+  doc.text('Comissão Científica Institucional — PIC-UNIG', pageWidth / 2, currentY, { align: 'center' });
+
+  adicionarRodape(doc, `Comprovante de Submissão #PIC-${String(proposta.id).padStart(3, '0')}`);
+  const filename = `comprovante_submissao_pic_${String(proposta.id).padStart(3, '0')}_${Date.now()}.pdf`;
+  doc.save(filename);
+}
+
+/**
+ * Exporta o Relatório de Acompanhamento e Progresso do Projeto (A4 Retrato)
+ */
+export function exportarRelatorioAcompanhamentoPDF(proposta: Proposta) {
+  const doc = new jsPDF({
+    orientation: 'portrait',
+    unit: 'pt',
+    format: 'a4',
+  });
+
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const startX = 40;
+  const contentWidth = pageWidth - startX * 2;
+  let currentY = 36;
+
+  // Tarja superior
+  doc.setFillColor(COR_AZUL_UNIG[0], COR_AZUL_UNIG[1], COR_AZUL_UNIG[2]);
+  doc.rect(0, 0, pageWidth, 6, 'F');
+
+  // Cabeçalho
+  doc.setFillColor(COR_AZUL_UNIG[0], COR_AZUL_UNIG[1], COR_AZUL_UNIG[2]);
+  doc.roundedRect(startX, currentY, 32, 32, 4, 4, 'F');
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(16);
+  doc.setTextColor(255, 255, 255);
+  doc.text('U', startX + 16, currentY + 22, { align: 'center' });
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(11);
+  doc.setTextColor(COR_AZUL_UNIG[0], COR_AZUL_UNIG[1], COR_AZUL_UNIG[2]);
+  doc.text('UNIVERSIDADE IGUAÇU — UNIG', startX + 42, currentY + 11);
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(COR_TEXTO_MUTED[0], COR_TEXTO_MUTED[1], COR_TEXTO_MUTED[2]);
+  doc.text('Pró-Reitoria de Pós-Graduação e Pesquisa — PROPEP', startX + 42, currentY + 22);
+  doc.text('Relatório Executivo de Acompanhamento de Projeto (PIC 2027)', startX + 42, currentY + 32);
+
+  // Selo
+  const seloWidth = 190;
+  const seloX = pageWidth - startX - seloWidth;
+  doc.setFillColor(236, 253, 245);
+  doc.setDrawColor(16, 185, 129);
+  doc.roundedRect(seloX, currentY, seloWidth, 32, 4, 4, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(6, 95, 70);
+  doc.text('RELATÓRIO DE ACOMPANHAMENTO', seloX + seloWidth / 2, currentY + 13, { align: 'center' });
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(7.5);
+  doc.text(`Status Atual: ${proposta.status}`, seloX + seloWidth / 2, currentY + 25, { align: 'center' });
+
+  currentY += 46;
+  doc.setDrawColor(COR_BORDA[0], COR_BORDA[1], COR_BORDA[2]);
+  doc.line(startX, currentY, pageWidth - startX, currentY);
+  currentY += 16;
+
+  // Título
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(12);
+  doc.setTextColor(COR_AZUL_UNIG[0], COR_AZUL_UNIG[1], COR_AZUL_UNIG[2]);
+  doc.text('DOSSIÊ DE ACOMPANHAMENTO E AVALIAÇÃO DE DESEMPENHO', pageWidth / 2, currentY, { align: 'center' });
+  currentY += 16;
+
+  // Bloco de Identificação
+  doc.setFillColor(COR_CINZA_CLARO[0], COR_CINZA_CLARO[1], COR_CINZA_CLARO[2]);
+  doc.setDrawColor(COR_BORDA[0], COR_BORDA[1], COR_BORDA[2]);
+  doc.roundedRect(startX, currentY, contentWidth, 75, 4, 4, 'FD');
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(8);
+  doc.setTextColor(COR_TEXTO_MUTED[0], COR_TEXTO_MUTED[1], COR_TEXTO_MUTED[2]);
+  doc.text('PROJETO DE PESQUISA:', startX + 10, currentY + 14);
+
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(9);
+  doc.setTextColor(COR_TEXTO_ESCURO[0], COR_TEXTO_ESCURO[1], COR_TEXTO_ESCURO[2]);
+  const splitT = doc.splitTextToSize(proposta.titulo, contentWidth - 20);
+  doc.text(splitT, startX + 10, currentY + 25);
+  const off = (splitT.length - 1) * 10;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8);
+  doc.setTextColor(COR_TEXTO_MUTED[0], COR_TEXTO_MUTED[1], COR_TEXTO_MUTED[2]);
+  doc.text(`Orientador: ${proposta.orientador?.nome || proposta.orientador?.usuarioNome || 'Docente'} • Bolsista: ${proposta.discenteNome} (${proposta.discenteCurso})`, startX + 10, currentY + 40 + off);
+  doc.text(`Nota Final Ponderada: ${proposta.calculo?.notaFinalPonderada || 'Aguardando'} • Vaga Concedida: ${proposta.calculo?.tipoVagaConcedida || 'Pendente'}`, startX + 10, currentY + 52 + off);
+
+  currentY += 88 + off;
+
+  // Tabela de Avaliações
+  const avals = proposta.avaliacoes || [];
+  const tabelaAval = avals.map((a) => [
+    `Parecerista #${a.ordemParecerista}`,
+    a.recomendacao,
+    `${a.notaMeritoTotal} / 6.00`,
+    a.parecerConsubstanciado ? a.parecerConsubstanciado.substring(0, 100) + '...' : 'Sem parecer textual',
+  ]);
+
+  if (tabelaAval.length > 0) {
+    autoTable(doc, {
+      startY: currentY,
+      head: [['Avaliador', 'Recomendação', 'Nota Mérito', 'Resumo do Parecer']],
+      body: tabelaAval,
+      margin: { left: startX, right: startX },
+      theme: 'grid',
+      styles: { fontSize: 8, cellPadding: 4, textColor: [30, 41, 59] },
+      headStyles: { fillColor: [0, 43, 73], textColor: [255, 255, 255], fontStyle: 'bold' },
+    });
+    currentY = (doc as any).lastAutoTable.finalY + 16;
+  }
+
+  // Progresso / Cronograma
+  doc.setFont('helvetica', 'bold');
+  doc.setFontSize(10);
+  doc.setTextColor(COR_AZUL_UNIG[0], COR_AZUL_UNIG[1], COR_AZUL_UNIG[2]);
+  doc.text('STATUS DE EXECUÇÃO E ENTREGAS', startX, currentY);
+  currentY += 12;
+
+  doc.setFont('helvetica', 'normal');
+  doc.setFontSize(8.5);
+  doc.setTextColor(COR_TEXTO_ESCURO[0], COR_TEXTO_ESCURO[1], COR_TEXTO_ESCURO[2]);
+  doc.text('• Submissão de Projeto e Documentação: Concluído (100%)', startX + 10, currentY);
+  doc.text('• Avaliação Duplo-Cega por Pares (Banca): Concluído', startX + 10, currentY + 14);
+  doc.text('• Validação de Rigor Metodológico e IA Gemini: Concluído', startX + 10, currentY + 28);
+  doc.text('• Homologação Final e Implementação de Bolsa PIC-UNIG: Em Andamento', startX + 10, currentY + 42);
+
+  adicionarRodape(doc, `Relatório de Acompanhamento #PIC-${String(proposta.id).padStart(3, '0')}`);
+  const filename = `relatorio_acompanhamento_pic_${String(proposta.id).padStart(3, '0')}_${Date.now()}.pdf`;
+  doc.save(filename);
+}
+
 

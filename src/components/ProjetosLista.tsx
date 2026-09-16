@@ -61,7 +61,7 @@ export const ProjetosLista: React.FC<ProjetosListaProps> = ({
   const [cursoFiltro, setCursoFiltro] = useState<string>(filtroCursoInicial);
   const [painelCursosAberto, setPainelCursosAberto] = useState<boolean>(false);
   const [tipoProgramaDrawer, setTipoProgramaDrawer] = useState<'todos' | 'Graduação' | 'Mestrado'>('todos');
-  const [apenasMeusProjetos, setApenasMeusProjetos] = useState<boolean>(currentUser?.papel === 'orientador');
+  const [apenasMeusProjetos, setApenasMeusProjetos] = useState<boolean>(false);
 
   // Cursos com submissões ativas
   const cursosComSubmissoes: string[] = Array.from(

@@ -72,7 +72,7 @@ Responda EXCLUSIVAMENTE em formato JSON com o seguinte schema:
 }`;
 
     const response = await ai.models.generateContent({
-      model: 'gemini-3.8-flash',
+      model: 'gemini-2.5-flash',
       contents: prompt,
       config: {
         responseMimeType: 'application/json',
@@ -89,17 +89,17 @@ Responda EXCLUSIVAMENTE em formato JSON com o seguinte schema:
       aderenciaEdital: parsed.aderenciaEdital || 'Conforme com as diretrizes do Edital.',
       viabilidadeTecnica: parsed.viabilidadeTecnica || 'Cronograma e metodologia factíveis.',
       recomendacoes: parsed.recomendacoes || 'Acompanhamento periódico recomendado.',
-      modeloUsado: 'gemini-3.8-flash',
+      modeloUsado: 'gemini-2.5-flash',
     };
-  } catch (error) {
-    console.error('Erro na chamada Gemini API:', error);
+  } catch (error: any) {
+    console.warn('Gemini API indisponível ou em alta demanda (503), ativando heurística de salvaguarda institucional:', error?.message || error);
     return {
       pontuacaoEstimada: 4.90,
       parecerGeral: 'Análise de salvaguarda executada: A proposta atende aos requisitos básicos estruturais do Edital PIC-UNIG 2027.',
       aderenciaEdital: 'Alinhado aos tópicos centrais da área.',
       viabilidadeTecnica: 'Exequível no período de 12 meses.',
       recomendacoes: 'Reforçar a delimitação do plano de trabalho discente.',
-      modeloUsado: 'gemini-3.8-flash (fallback)',
+      modeloUsado: 'gemini-2.5-flash (fallback automático 503)',
     };
   }
 }

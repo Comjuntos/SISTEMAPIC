@@ -13,9 +13,11 @@ import { RelatoriosCoordenacao } from './components/RelatoriosCoordenacao.tsx';
 import { AuditoriaLGPD } from './components/AuditoriaLGPD.tsx';
 import { GerenciadorEditais } from './components/GerenciadorEditais.tsx';
 import { ConformidadeAnexosEdital } from './components/ConformidadeAnexosEdital.tsx';
+import { GoogleDriveManager } from './components/GoogleDriveManager.tsx';
 import { ModalParecerConsolidado } from './components/ModalParecerConsolidado.tsx';
 import { ModalDownloadSeguro } from './components/ModalDownloadSeguro.tsx';
 import { QuadroDeAvisos } from './components/QuadroDeAvisos.tsx';
+import { MeusProjetosOrientador } from './components/MeusProjetosOrientador.tsx';
 import { Building2, ShieldCheck, Sparkles, RefreshCw } from 'lucide-react';
 
 export default function App() {
@@ -144,12 +146,15 @@ export default function App() {
     const restrictedTabs = ['simulador', 'relatorios', 'bolsas', 'projetos'];
     if (!isGestor && restrictedTabs.includes(activeTab)) {
       if (currentUser.papel === 'orientador') {
-        setActiveTab('submissao');
+        setActiveTab('meus-projetos');
       } else if (currentUser.papel === 'avaliador') {
         setActiveTab('banca');
       } else {
         setActiveTab('progresso');
       }
+    }
+    if (currentUser.papel === 'orientador' && activeTab === 'progresso') {
+      setActiveTab('meus-projetos');
     }
   }, [currentUser?.papel, activeTab]);
 
@@ -452,6 +457,20 @@ export default function App() {
               />
             )}
 
+            {activeTab === 'meus-projetos' && (
+              <MeusProjetosOrientador
+                projetos={propostas}
+                orientadores={orientadores}
+                currentUser={currentUser}
+                onNavigateSubmissao={() => setActiveTab('submissao')}
+                onNavigateDrive={() => setActiveTab('drive')}
+                onSelectProjeto={(p) => {
+                  setSelectedProposta(p);
+                  setParecerModalProposta(p);
+                }}
+              />
+            )}
+
             {activeTab === 'submissao' && (
               <FormularioSubmissao
                 orientadores={orientadores}
@@ -493,6 +512,10 @@ export default function App() {
 
             {activeTab === 'auditoria' && (
               <AuditoriaLGPD logs={auditoriaLogs} usuarios={usuarios} />
+            )}
+
+            {activeTab === 'drive' && (
+              <GoogleDriveManager currentUser={currentUser} />
             )}
           </>
         )}

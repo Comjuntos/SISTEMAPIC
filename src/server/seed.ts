@@ -19,7 +19,17 @@ export async function runDatabaseSeed() {
     // Check if edital already seeded
     const existingEdital = await db.select().from(editais).limit(1);
     if (existingEdital.length > 0) {
-      console.log('Seed: Base já populada com o Edital PIC-UNIG 2027.');
+      console.log('Seed: Base já populada. Atualizando proposta #6 com dados reais do PDF...');
+      await db.update(propostas)
+        .set({
+          titulo: 'Mortalidade por Doenças Cardiovasculares no Município de Nova Iguaçu',
+          discenteNome: 'Ramon Isidorio da Silva',
+          discenteEmail: 'ramon.isidorio@aluno.unig.br',
+          discenteCurso: 'Medicina',
+          discenteCr: '9.40',
+          resumo: 'Introdução: As Doenças do Aparelho Circulatório (DAC), tem como principais causas de óbitos os infartos e os acidentes vasculares cerebrais. Objetivos: Analisar as taxas de mortalidade por DAC no município de Nova Iguaçu na população ≥ 20 anos de idade entre os anos de 2000 a 2023, identificando o perfil epidemiológico da doença por sexo e faixa etária. Metodologia: estudo de coorte, retrospectivo utilizando banco de dados de óbitos do município de Nova Iguaçu, disponível nas bases do Sistema de Informação de Mortalidade (SIM) do DATASUS. Alunas Voluntárias: Karen Stefani B. B. de Oliveira, Roberta Ferreira Freitas, Cristinne Alves Pereira.',
+        })
+        .where(eq(propostas.id, 6));
       return;
     }
 
@@ -392,6 +402,36 @@ export async function runDatabaseSeed() {
           metodoPontuacaoTipo: '1.75',
           metodoScoreTotal: '6.00',
         },
+        // Proposta 6: Mortalidade por Doenças Cardiovasculares no Município de Nova Iguaçu
+        {
+          editalId: editalPic.id,
+          titulo: 'Mortalidade por Doenças Cardiovasculares no Município de Nova Iguaçu',
+          grandeArea: 'Ciências da Saúde',
+          subarea: 'Cardiologia e Saúde Pública',
+          resumo: 'Introdução: As Doenças do Aparelho Circulatório (DAC), tem como principais causas de óbitos os infartos e os acidentes vasculares cerebrais. Objetivos: Analisar as taxas de mortalidade por DAC no município de Nova Iguaçu na população ≥ 20 anos de idade entre os anos de 2000 a 2023, identificando o perfil epidemiológico da doença por sexo e faixa etária. Metodologia: estudo de coorte, retrospectivo utilizando banco de dados de óbitos do município de Nova Iguaçu, disponível nas bases do Sistema de Informação de Mortalidade (SIM) do DATASUS. Alunas Voluntárias: Karen Stefani B. B. de Oliveira, Roberta Ferreira Freitas, Cristinne Alves Pereira.',
+          orientadorId: o1.id,
+          discenteNome: 'Ramon Isidorio da Silva',
+          discenteEmail: 'ramon.isidorio@aluno.unig.br',
+          discenteCurso: 'Medicina',
+          discenteCr: '9.40',
+          modalidade: 'Ampla Concorrência',
+          tipoCota: null,
+          status: 'avaliada',
+          hashSha256: 'a1b2c3d4e5f67890123456789abcdef0123456789abcdef0123456789abcdef0',
+          arquivoNome: 'projeto_pic_unig_mortalidade_cardiovascular_nova_iguacu.pdf',
+          arquivoUrl: 'https://storage.googleapis.com/pic-unig-2027-vault/projetos/projeto_pic_unig_mortalidade_cardiovascular_nova_iguacu.pdf',
+          habilitacaoEtapa1: true,
+          parecerHabilitacao: 'Habilitado regimentalmente. Documentação completa e CR 9.40.',
+          resultadosPreliminares: true,
+          viabilidadeFinanceiraLogistica: true,
+          metodoTipo: 'Quantitativo',
+          metodoTamanhoAmostra: 1200,
+          metodoDesenho: 'Estudo ecológico e série temporal',
+          metodoPontuacaoDesenho: '4.50',
+          metodoPontuacaoAmostra: '3.00',
+          metodoPontuacaoTipo: '2.00',
+          metodoScoreTotal: '9.50',
+        },
       ])
       .returning();
 
@@ -400,6 +440,7 @@ export async function runDatabaseSeed() {
     const p3 = insertedPropostas[2];
     const p4 = insertedPropostas[3];
     const p5 = insertedPropostas[4];
+    const p6 = insertedPropostas[5];
 
     // 7. Distribuições Duplo-Cegas (Avaliador 1 e 2)
     await db.insert(distribuicoesAvaliacao).values([
@@ -408,6 +449,7 @@ export async function runDatabaseSeed() {
       { propostaId: p3.id, avaliador1Id: av1.id, avaliador2Id: av2.id, status: 'concluida' },
       { propostaId: p4.id, avaliador1Id: av1.id, avaliador2Id: av2.id, status: 'parcial' },
       { propostaId: p5.id, avaliador1Id: av1.id, avaliador2Id: av2.id, status: 'concluida' },
+      { propostaId: p6.id, avaliador1Id: av1.id, avaliador2Id: av2.id, status: 'concluida' },
     ]);
 
     // 8. Lançar Pareceres Duplo-Cego Detalhados
@@ -570,6 +612,40 @@ export async function runDatabaseSeed() {
         parecerConsubstanciado: 'Considero que a série temporal proposta é curta e faltam variáveis de controle fundamentais de saneamento básico para isolar o efeito estritamente climático.',
         recomendacao: 'Não Recomendado',
       },
+      {
+        propostaId: p6.id,
+        avaliadorId: av1.id,
+        ordemParecerista: 1,
+        notaTitulo: '0.50',
+        notaIntroducao: '0.75',
+        notaObjetivos: '0.75',
+        notaJustificativa: '0.50',
+        notaMetodologia: '0.95',
+        notaViabilidade: '0.75',
+        notaCronograma: '0.45',
+        notaPlanoDiscente: '0.70',
+        notaInsercaoSocial: '0.45',
+        notaMeritoTotal: '5.80',
+        parecerConsubstanciado: 'Estudo epidemiológico excelente sobre mortalidade cardiovascular no município de Nova Iguaçu. Metodologia de séries temporais bem delineada.',
+        recomendacao: 'Recomendado para Bolsa',
+      },
+      {
+        propostaId: p6.id,
+        avaliadorId: av2.id,
+        ordemParecerista: 2,
+        notaTitulo: '0.50',
+        notaIntroducao: '0.70',
+        notaObjetivos: '0.75',
+        notaJustificativa: '0.50',
+        notaMetodologia: '0.90',
+        notaViabilidade: '0.70',
+        notaCronograma: '0.45',
+        notaPlanoDiscente: '0.70',
+        notaInsercaoSocial: '0.45',
+        notaMeritoTotal: '5.65',
+        parecerConsubstanciado: 'Relevante impacto para a saúde pública na Baixada Fluminense. Dados secundários robustos do SIM e SINAN.',
+        recomendacao: 'Recomendado para Bolsa',
+      },
     ]);
 
     // 9. Cálculos e Classificação Consolidada
@@ -585,6 +661,22 @@ export async function runDatabaseSeed() {
     // Discente CR = 8.95
     // Ponderada = (10.00 * 0.30) + (9.583 * 0.50) + (8.95 * 0.20) = 3.00 + 4.79 + 1.79 = 9.58
     await db.insert(calculosClassificacao).values([
+      {
+        propostaId: p6.id,
+        notaEtapa2Avaliador1: '5.80',
+        notaEtapa2Avaliador2: '5.65',
+        mediaEtapa2Merito: '5.73',
+        divergenciaDetectada: false,
+        notaEtapa3Orientador: '3.70',
+        notaAluno: '9.30',
+        notaFinalPonderada: '9.42',
+        classificacaoGeral: 2,
+        classificacaoModalidade: 2,
+        tipoVagaConcedida: 'Ampla Concorrência',
+        criterioDesempateAplicado: 'Classificação por Nota Final',
+        homologado: true,
+        homologadoEm: new Date(),
+      },
       {
         propostaId: p3.id,
         notaEtapa2Avaliador1: '5.80',
